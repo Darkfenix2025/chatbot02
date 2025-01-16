@@ -1,4 +1,3 @@
-import React from 'react';
 import { MessageCircle, Bot } from 'lucide-react';
 import { Message } from '../types';
 
@@ -8,7 +7,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
-  
+
   return (
     <div className={`flex items-start gap-4 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${

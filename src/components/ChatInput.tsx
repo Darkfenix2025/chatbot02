@@ -1,38 +1,36 @@
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
-
+import { useState } from 'react';
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (content: string) => void;
   disabled?: boolean;
 }
-
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
-  const [input, setInput] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const [inputValue, setInputValue] = useState('');
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (input.trim()) {
-      onSend(input);
-      setInput('');
+    if (inputValue.trim() !== '') {
+      onSend(inputValue);
+      setInputValue('');
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
       <input
         type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder="Escribe aquí tu mensaje..."
+        className="flex-1 rounded-md border p-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         disabled={disabled}
-        placeholder="Type your message..."
-        className="flex-1 rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         type="submit"
-        disabled={disabled || !input.trim()}
-        className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
+        className="rounded-md bg-blue-500 px-4 py-2 font-bold text-white disabled:opacity-50"
+        disabled={disabled}
       >
-        <Send className="w-5 h-5" />
+        Enviar
       </button>
     </form>
   );

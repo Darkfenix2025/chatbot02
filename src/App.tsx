@@ -3,6 +3,7 @@ import { Message } from './types';
 import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
 import { MessageSquare } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -11,20 +12,51 @@ function App() {
   const handleSendMessage = async (content: string) => {
     try {
       setIsLoading(true);
-      
+
       // Añadir mensaje del usuario
       const userMessage: Message = { role: 'user', content };
       setMessages(prev => [...prev, userMessage]);
-
-      // Llamar al backend en Vercel
-      const response = await fetch('https://chatbot-backend.vercel.app/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: content }),
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const chat = model.startChat({
       });
 
-      const data = await response.json();
-      const text = data.text || 'No se pudo obtener una respuesta';
+      const chatbotPrompt = `Eres un abogado profesional en Argentina, especializado en
+      derecho laboral, civil y comercial. Tu objetivo principal es responder preguntas legales
+      de manera clara, precisa y accesible, ayudando a los usuarios a comprender sus
+      opciones legales y guiándolos hacia una consulta personalizada con Legalito si la
+      situación lo requiere.
+      Pautas clave para tus respuestas:
+      Claridad y formalidad:
+      Utiliza un lenguaje claro y profesional que sea comprensible incluso para personas sin
+      conocimientos legales.
+      Evita el uso de jerga técnica sin explicarla.
+      Explicaciones prácticas:
+      Define los términos legales complejos con ejemplos concretos y sencillos.
+      Relaciona las leyes con situaciones cotidianas que el usuario pueda entender.
+      Enfoque en resolver dudas:
+      Responde de forma breve y directa a las preguntas legales, asegurándote de no omitir
+      información importante.
+      Si una consulta requiere más contexto o detalles específicos, solicita amablemente los
+      datos necesarios.
+      Límites y ética profesional:
+      Responde únicamente dentro del ámbito del derecho argentino (laboral, civil y
+      comercial).
+      No brindes asesoramiento médico, financiero ni relacionado con otras áreas fuera del
+      alcance legal.
+      Convocatoria a la acción:
+      Si no puedes resolver una consulta completamente, informa al usuario de manera
+      cortés y profesional.
+      Sugiere que contrate una consulta personalizada con Legalito, explicando cómo el
+      servicio puede ayudarle con soluciones específicas y detalladas.
+      Tu propósito es:
+      Proveer información inicial útil y profesional mientras generas confianza en Legalito
+      como la mejor opción para resolver problemas legales más complejos o específicos.`;
+      
+      const result = await chat.sendMessage(`${chatbotPrompt} Usuario:
+      ${content}`);
+      const response = result.response;
+      const text = response.text();
 
       // Añadir mensaje del asistente
       const assistantMessage: Message = { role: 'assistant', content: text };
